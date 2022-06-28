@@ -30,6 +30,7 @@ use QuickBooksOnline\API\Data\IPPAttachable;
 use QuickBooksOnline\API\Data\IPPIntuitEntity;
 use QuickBooksOnline\API\Data\IPPTaxService;
 use QuickBooksOnline\API\Data\IPPid;
+use QuickBooksOnline\API\Diagnostics\LogRequestsToDisk;
 use QuickBooksOnline\API\Exception\IdsException;
 use QuickBooksOnline\API\Exception\ServiceException;
 use QuickBooksOnline\API\Exception\IdsExceptionManager;
@@ -147,6 +148,11 @@ class DataService
      */
     private $clientName = CoreConstants::CLIENT_CURL;
 
+    /**
+     * @var LogRequestsToDisk
+     */
+    private $RequestLogging;
+
 
     /**
      * Initializes a new instance of the DataService class. The old way to construct the dataService. Used by PHP SDK < 3.0.0
@@ -213,6 +219,9 @@ class DataService
        if(isset($serviceContext)){
           $client = ClientFactory::createClient($this->getClientName());
           $this->restHandler = new SyncRestHandler($serviceContext, $client);
+           if($this->RequestLogging) {
+               $this->restHandler->setLogger($this->RequestLogging);
+           }
        }else{
           throw new SdkException("Can not set the Rest Client based on null ServiceContext.");
        }
@@ -1673,5 +1682,15 @@ class DataService
         }else{
             return (String)$id;
         }
+    }
+
+
+    public function setLogger(LogRequestsToDisk $logger)
+    {
+        $this->RequestLogging = $logger;
+        try {
+            $handler = $this->getRestHandler();
+            $handler->setLogger($logger);
+        } catch (\Exception $e) {}
     }
 }

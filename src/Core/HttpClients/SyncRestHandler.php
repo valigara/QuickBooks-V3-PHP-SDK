@@ -540,4 +540,9 @@ class SyncRestHandler extends RestHandler
         // Return the response.
         return $response;
     }
+
+    public function setLogger(LogRequestsToDisk $logger)
+    {
+        $this->RequestLogging = $logger;
+    }
 }
